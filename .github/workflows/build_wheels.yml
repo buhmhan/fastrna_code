@@ -32,7 +32,7 @@ jobs:
         if: startsWith(matrix.os, 'ubuntu')
         run: |
           pip install auditwheel
-          auditwheel repair dist/*.whl -w wheelhouse
+          auditwheel repair dist/*.whl -w wheelhouse --plat manylinux2014_x86_64
 
       # Upload wheel from 'dist' directory for macOS and Windows
       - name: Upload wheel from dist
