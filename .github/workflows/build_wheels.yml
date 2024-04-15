@@ -27,10 +27,6 @@ jobs:
       - name: Build wheel
         run: python setup.py bdist_wheel
 
-      - name: Fix wheel for Linux (Repair wheel)
-        if: startsWith(matrix.os, 'ubuntu')
-        run: auditwheel repair dist/*.whl --output-dir wheelhouse
-
       - uses: actions/upload-artifact@v4
         with:
           name: wheels-${{ matrix.os }}-py${{ matrix.python-version }}
