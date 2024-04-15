@@ -8,8 +8,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest]
-        python-version: ["3.12"]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.10", "3.11", "3.12"]
 
     steps:
       - uses: actions/checkout@v4
@@ -27,15 +27,25 @@ jobs:
       - name: Build wheel
         run: python setup.py bdist_wheel
 
-      # for Linux, make it compatible with manylinux
-      - name: Audit wheel
+      # Install and run auditwheel if on Ubuntu
+      - name: Install and Repair wheel with auditwheel
         if: startsWith(matrix.os, 'ubuntu')
         run: |
-          pip install twine
-          auditwheel repair dist/*.whl
+          pip install auditwheel
+          auditwheel repair dist/*.whl --output-dir wheelhouse
 
-      - name: Upload wheel
+      # Upload wheel from 'dist' directory for macOS and Windows
+      - name: Upload wheel from dist
+        if: startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'windows-latest')
         uses: actions/upload-artifact@v4
         with:
           name: wheels-${{ matrix.os }}-py${{ matrix.python-version }}
           path: ./dist/*.whl
+
+      # Upload wheel from 'wheelhouse' for Ubuntu
+      - name: Upload wheel from wheelhouse
+        if: startsWith(matrix.os, 'ubuntu')
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ matrix.os }}-py${{ matrix.python-version }}
+          path: ./wheelhouse/*.whl
