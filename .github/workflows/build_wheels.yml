@@ -24,10 +24,15 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install setuptools wheel numpy scipy cython
 
+      - name: Prepare build environment variable
+        id: prep_env
+        run: |
+          PY_VER=${{ matrix.python-version }}
+          FORMAT_VERSION="cp${PY_VER//./}"
+          echo "CIBW_BUILD=cp${FORMAT_VERSION}-manylinux_x86_64" >> $GITHUB_ENV
+
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.17.0
-        env:
-          CIBW_BUILD: "cp${{ matrix.python-version }}-manylinux_x86_64"
         with:
           output-dir: wheelhouse
 
