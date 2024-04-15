@@ -9,7 +9,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]
 
     steps:
       - uses: actions/checkout@v4
@@ -27,25 +27,8 @@ jobs:
       - name: Build wheel
         run: python setup.py bdist_wheel
 
-      # Install and run auditwheel if on Ubuntu
-      - name: Install and Repair wheel with auditwheel
-        if: startsWith(matrix.os, 'ubuntu')
-        run: |
-          pip install auditwheel
-          auditwheel repair dist/*.whl -w wheelhouse --plat manylinux2014_x86_64
-
-      # Upload wheel from 'dist' directory for macOS and Windows
       - name: Upload wheel from dist
-        if: startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'windows-latest')
         uses: actions/upload-artifact@v4
         with:
           name: wheels-${{ matrix.os }}-py${{ matrix.python-version }}
           path: ./dist/*.whl
-
-      # Upload wheel from 'wheelhouse' for Ubuntu
-      - name: Upload wheel from wheelhouse
-        if: startsWith(matrix.os, 'ubuntu')
-        uses: actions/upload-artifact@v4
-        with:
-          name: wheels-${{ matrix.os }}-py${{ matrix.python-version }}
-          path: ./wheelhouse/*.whl
