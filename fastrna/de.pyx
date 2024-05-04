@@ -185,12 +185,14 @@ def fastdeg(mtx, groups, celltype, geneidx):
     celltype: celltype to find DEG
     geneidx: index of genes to perform DEG
     """
+
     groups = (groups == celltype).astype(str)
     _, vecU, cntU = np.unique(groups, return_inverse=True, return_counts=True)
     X = np.ascontiguousarray(sm.add_constant(pd.get_dummies(groups, drop_first=True)).values).astype(np.float32)
     U = sparse.csr_matrix((np.ones(X.shape[0]), vecU, np.arange(X.shape[0]+1)), dtype=np.float32).tocsc()
     x = np.unique(X, axis=0)
     vecU = vecU.astype(np.int32)
+
     
     spY = mtx.T[:,geneidx]
     spY.sort_indices()
@@ -200,10 +202,10 @@ def fastdeg(mtx, groups, celltype, geneidx):
     vecU = vecU
     cntU = cntU
     spU = U
-
+    
     denseB = np.zeros((X.shape[1],spY.shape[1]), dtype=np.float32)
     denseB[0,:] =  np.log(np.asarray(spY.mean(axis=0)).ravel() + 1e-5)
-
+    
     Bmin = fmin_lbfgs(computeObjFunc, denseB, args=[spY, denX, denXtY, udenX, vecU, cntU, spU])
     
     # compute bread
@@ -235,8 +237,13 @@ def fastdeg(mtx, groups, celltype, geneidx):
         zscore = np.abs(Bmin[1:,gidx]/bses[gidx,1:])
         pval = stats.norm.logsf(abs(zscore)) + np.log(2)
         pvals[gidx] = pval
-
+    
     #mean expression
-    gmean = np.asarray(spY[groups.astype(bool),:].mean(axis=0)).ravel()
+    #gmean = np.asarray(spY[groups.astype(bool),:].mean(axis=0)).ravel()
+    
+    return Bmin.T, bses, pvals#, gmean 
 
-    return Bmin.T, bses, pvals, gmean 
+def fastdeg_r(mtx, groups, celltype, geneidx):
+    mtx.data = mtx.data.astype(np.float32)
+    Bmin, bses, pvals = fastdeg(mtx, np.asarray(groups), celltype, np.asarray(geneidx)-1)
+    return Bmin, bses, pvals
