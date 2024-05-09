@@ -206,7 +206,7 @@ def fastdeg(mtx, groups, celltype, geneidx):
     denseB = np.zeros((X.shape[1],spY.shape[1]), dtype=np.float32)
     denseB[0,:] =  np.log(np.asarray(spY.mean(axis=0)).ravel() + 1e-5)
     
-    Bmin = fmin_lbfgs(computeObjFunc, denseB, args=[spY, denX, denXtY, udenX, vecU, cntU, spU])
+    Bmin = fmin_lbfgs(computeObjFunc, denseB, args=[spY, denX, denXtY, udenX, vecU, cntU, spU], epsilon=1e-7)
     
     # compute bread
     C = np.zeros((x.shape[0], X.shape[1], X.shape[1]), dtype=np.float32)
